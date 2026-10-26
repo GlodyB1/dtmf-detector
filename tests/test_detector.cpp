@@ -176,59 +176,83 @@ int main() {
 
     std::cout << "Noisy-signal test PASSED!\n";
 
- 
     
-    // TEST 7: Measure accuracy across multiple noise trials
+    // TEST 7: Measure noise tolerance across all 12 DTMF keys
     const double noise_levels[] = {
         0.0, 0.1, 0.2, 0.4, 0.6, 0.8, 1.0, 1.5, 2.0
     };
 
-    constexpr int trials = 100;
+    struct DtmfKey {
+        char digit;
+        double low_frequency;
+        double high_frequency;
+    };
 
-    std::cout << "\nNoise accuracy experiment:\n";
+    const DtmfKey keys[] = {
+        {'1', 697.0, 1209.0},
+        {'2', 697.0, 1336.0},
+        {'3', 697.0, 1477.0},
+        {'4', 770.0, 1209.0},
+        {'5', 770.0, 1336.0},
+        {'6', 770.0, 1477.0},
+        {'7', 852.0, 1209.0},
+        {'8', 852.0, 1336.0},
+        {'9', 852.0, 1477.0},
+        {'*', 941.0, 1209.0},
+        {'0', 941.0, 1336.0},
+        {'#', 941.0, 1477.0}
+    };
+
+    constexpr int trials_per_key = 100;
+
+    std::cout << "\nAll-key noise accuracy experiment:\n";
 
     for (double noise_level : noise_levels) {
         int correct = 0;
         int rejected = 0;
         int incorrect = 0;
 
+        // Fixed seed for reproducible experiments
         std::mt19937 rng(42);
 
-        for (int trial = 0; trial < trials; ++trial) {
-            auto signal = dtmf::test::generate_dual_tone(
-                770.0,
-                1336.0,
-                sample_rate,
-                duration
-            );
-
-            if (noise_level > 0.0) {
-                std::normal_distribution<double> noise(
-                    0.0,
-                    noise_level
+        for (const auto& key : keys) {
+            for (int trial = 0; trial < trials_per_key; ++trial) {
+                auto signal = dtmf::test::generate_dual_tone(
+                    key.low_frequency,
+                    key.high_frequency,
+                    sample_rate,
+                    duration
                 );
 
-                for (double& sample : signal) {
-                    sample += noise(rng);
+                if (noise_level > 0.0) {
+                    std::normal_distribution<double> noise(
+                        0.0,
+                        noise_level
+                    );
+
+                    for (double& sample : signal) {
+                        sample += noise(rng);
+                    }
                 }
-            }
 
-            auto result = dtmf::detect_digit(
-                signal,
-                sample_rate
-            );
+                auto result = dtmf::detect_digit(
+                    signal,
+                    sample_rate
+                );
 
-            if (!result.has_value()) {
-                ++rejected;
-            } else if (result.value() == '5') {
-                ++correct;
-            } else {
-                ++incorrect;
+                if (!result.has_value()) {
+                    ++rejected;
+                } else if (result.value() == key.digit) {
+                    ++correct;
+                } else {
+                    ++incorrect;
+                }
             }
         }
 
-        double accuracy =
-            100.0 * correct / trials;
+        constexpr int total_trials = 12 * trials_per_key;
+
+        double accuracy = 100.0 * correct / total_trials;
 
         std::cout << "Noise: " << noise_level
                   << " | Accuracy: " << accuracy << "%"
@@ -237,6 +261,7 @@ int main() {
                   << " | Incorrect: " << incorrect
                   << '\n';
     }
+
 
     return 0;
 }

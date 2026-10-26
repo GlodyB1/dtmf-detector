@@ -84,23 +84,30 @@ Validation includes:
 
 ### Noise Tolerance Experiment
 
-To explore robustness, 100 noisy versions of digit 5 were evaluated at each Gaussian noise standard deviation.
+The detector was evaluated using synthetic signals for all 12 standard DTMF keys at an 8,000 Hz sample rate with 320-sample (40 ms) analysis windows.
 
-| Noise standard deviation | Correct detections | Accuracy |
-|---|---:|---:|
-| 0.0 | 100/100 | 100% |
-| 0.1 | 100/100 | 100% |
-| 0.2 | 100/100 | 100% |
-| 0.4 | 100/100 | 100% |
-| 0.6 | 99/100 | 99% |
-| 0.8 | 95/100 | 95% |
-| 1.0 | 82/100 | 82% |
-| 1.5 | 37/100 | 37% |
-| 2.0 | 16/100 | 16% |
+For each noise level, 100 independently generated Gaussian noise sequences were applied to each key, producing 1,200 trials per noise level and **10,800 trials in total**. A fixed random seed was used for reproducibility.
 
-No incorrect digits were returned in these 900 trials; unsuccessful trials returned no detection.
+| Noise standard deviation | Correct | Rejected | Incorrect | Accuracy |
+|---|---:|---:|---:|---:|
+| 0.0 | 1,200 | 0 | 0 | 100% |
+| 0.1 | 1,200 | 0 | 0 | 100% |
+| 0.2 | 1,200 | 0 | 0 | 100% |
+| 0.4 | 1,200 | 0 | 0 | 100% |
+| 0.6 | 1,200 | 0 | 0 | 100% |
+| 0.8 | 1,171 | 29 | 0 | 97.58% |
+| 1.0 | 1,009 | 191 | 0 | 84.08% |
+| 1.5 | 458 | 742 | 0 | 38.17% |
+| 2.0 | 189 | 1,007 | 4 | 15.75% |
 
-**Limitations:** These results reflect synthetic digit-5 signals and a fixed-seed Gaussian noise model. They do not establish accuracy across all digits, real telephone recordings, or arbitrary interference conditions. Noise levels are expressed as standard deviations relative to the generated signal amplitude, not calibrated SNR values.
+**Key findings:**
+
+- Achieved 100% detection accuracy across all 12 keys at tested noise standard deviations up to 0.6.
+- Maintained 97.58% accuracy at noise standard deviation 0.8.
+- Recorded only 4 incorrect digit classifications across 10,800 trials, all at the highest noise level.
+- At high noise levels, the detector predominantly rejected signals rather than returning incorrect digits.
+
+**Limitations:** These results apply to synthetically generated DTMF signals with additive Gaussian noise. Noise standard deviations are relative to the generated signal amplitude, not calibrated signal-to-noise ratios. Performance on real telephone recordings, different audio durations, and other interference types has not been established.
 
 ## Project Structure
 
