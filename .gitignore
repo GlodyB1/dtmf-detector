@@ -1,2 +1,4 @@
 build/
 *.exe
+test_detector
+test_goertzel

@@ -30,5 +30,32 @@ namespace dtmf::test{
 
         return samples;
     }
+    inline std::vector<double> generate_dual_tone(
+        double low_frequency,
+        double high_frequency,
+        double sample_rate,
+        double duration_seconds
+    ) {
+        // Generate each tone separately
+        auto low = generate_tone(
+            low_frequency,
+            sample_rate,
+            duration_seconds,
+            0.5 // Amplitude for low frequency
+        );
+
+        auto high = generate_tone(
+            high_frequency,
+            sample_rate,
+            duration_seconds,
+            0.5 // Amplitude for high frequency
+        );
+
+        // Combine the two signals
+        for (std::size_t i = 0; i < low.size(); ++i) {
+            low[i] += high[i];
+        }
+        return low;
+    }
 
 }//namespace dtmf::test
